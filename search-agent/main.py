@@ -7,7 +7,10 @@ from langchain.tools import tool
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
+from tavily import TavilyClient
 
+
+tavily = TavilyClient()
 @tool
 def search(query: str) -> str:
     """"Tool that searches over internet
@@ -17,7 +20,8 @@ def search(query: str) -> str:
         The Search Result
         """
     print(f"searching for {query}")
-    return "Berlin weather is rainy"
+    #return "Berlin weather is rainy"
+    return tavily.search(query=query)
 
 llm = ChatOllama(temperature=0, model="gpt-oss:20b")
 tools = [search]
