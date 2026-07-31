@@ -1,39 +1,47 @@
+from typing import List
+
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 load_dotenv()
-from pprint import pprint
 from langchain.agents import create_agent
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
-from langchain_ollama import ChatOllama
-from tavily import TavilyClient
 from langchain_tavily import TavilySearch
+from langchain_ollama import ChatOllama
 
 
-# tavily = TavilyClient()
-# @tool
-# def search(query: str) -> str:
-#     """"Tool that searches over internet
-#     Args:
-#         query: The query to search for
-#     Returns:
-#         The Search Result
-#         """
-#     print(f"searching for {query}")
-#     #return "Berlin weather is rainy"
-#     return tavily.search(query=query)
+class Source(BaseModel):
+    """Schema for a source used by the agent"""
 
-llm = ChatOllama(temperature=0, model="gpt-oss:20b")
-#tools = [search]
+    url: str = Field(description="The URL of the source")
+
+
+class AgentResponse(BaseModel):
+    """Schema for agent response with answer and sources"""
+
+    answer: str = Field(description="Thr agent's answer to the query")
+    sources: List[Source] = Field(
+        default_factory=list, description="List of sources used to generate the answer"
+    )
+
+
+llm = ChatOllama(model="gpt-oss:20b",  temperature=0)
 tools = [TavilySearch()]
-agent = create_agent(model=llm, tools=tools)
+agent = create_agent(model=llm, tools=tools, response_format=AgentResponse)
 
 
 def main():
-    print("Hello from agentic-ai-learning!")
-    result = agent.invoke({"messages":HumanMessage(content="search for 3 job postings for an ai engineer in the Berlin Area on linkedIn and list their details")})
-    pprint(result)
+    print("Hello from langchain-course!")
+    result = agent.invoke(
+        {
+            "messages": HumanMessage(
+                content="search for 3 job postings for an ai engineer using langchain in the City - Berin, Germany  on linkedin and list their details?"
+            )
+        }
+    )
+    print(result)
 
 
 if __name__ == "__main__":
